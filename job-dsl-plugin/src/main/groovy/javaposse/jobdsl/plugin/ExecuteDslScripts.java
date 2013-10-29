@@ -147,7 +147,7 @@ public class ExecuteDslScripts extends Builder {
         for (ScriptRequest request : scriptRequests) {
             LOGGER.log(Level.FINE, String.format("Request for %s", request.location));
 
-            Set<GeneratedJob> dslJobs = DslScriptLoader.runDslEngine(request, jm);
+            Set<GeneratedJob> dslJobs = DslScriptLoader.runDslEngine(request, jm).getJobs();
             freshJobs.addAll(dslJobs);
         }
 

@@ -40,7 +40,7 @@ public class Run {
 
         for(String scriptName: args) {
             ScriptRequest request = new ScriptRequest(scriptName, null, cwdURL, false);
-            Set<GeneratedJob> generatedJobs = DslScriptLoader.runDslEngine(request, jm);
+            Set<GeneratedJob> generatedJobs = DslScriptLoader.runDslEngine(request, jm).getJobs();
 
             for(GeneratedJob job: generatedJobs) {
                 System.out.println("From "+ scriptName + ", Generated: " + job);

@@ -51,6 +51,11 @@ class FileJobManagement extends AbstractJobManagement {
     }
 
     @Override
+    void createOrUpdateView(String name, String xml, boolean ignoreExisting) {
+        new File(name + ext).write(xml)
+    }
+
+    @Override
     public Map<String, String> getParameters() {
         return params;
     }

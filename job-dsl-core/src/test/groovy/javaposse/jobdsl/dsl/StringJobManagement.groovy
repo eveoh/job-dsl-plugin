@@ -61,6 +61,11 @@ public class StringJobManagement extends AbstractJobManagement {
     }
 
     @Override
+    void createOrUpdateView(String name, String xml, boolean ignoreExisting) {
+        throw new UnsupportedOperationException()
+    }
+
+    @Override
     Map<String, String> getParameters() {
         return params
     }

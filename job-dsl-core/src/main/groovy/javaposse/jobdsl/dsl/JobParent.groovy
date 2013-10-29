@@ -3,19 +3,25 @@ package javaposse.jobdsl.dsl
 import com.google.common.base.Preconditions
 import com.google.common.collect.Lists
 import com.google.common.collect.Sets
+import javaposse.jobdsl.dsl.views.ListView
 
 import java.util.logging.Level
 import java.util.logging.Logger
 
 public abstract class JobParent extends Script {
     private static final Logger LOGGER = Logger.getLogger(JobParent.getName());
+    private static final Map<ViewType, Class<? extends View>> VIEW_TYPE_MAPPING = [
+            (ViewType.ListView): ListView.class,
+    ]
 
     JobManagement jm;
     Set<Job> referencedJobs
+    Set<View> referencedViews
     List<String> queueToBuild
 
     public JobParent() {
         referencedJobs = Sets.newLinkedHashSet()
+        referencedViews = Sets.newLinkedHashSet()
         queueToBuild = Lists.newArrayList()
     }
 
@@ -31,6 +37,15 @@ public abstract class JobParent extends Script {
 
         // This job can have .configure { } called on
         return job
+    }
+
+    public View view(Map<String, Object> arguments=[:], Closure closure) {
+        ViewType viewType = arguments['type'] as ViewType
+        Class<? extends View> viewClass = VIEW_TYPE_MAPPING[viewType]
+        View view = viewClass.newInstance(jm)
+        view.with(closure)
+        referencedViews << view
+        return view
     }
 
     /**

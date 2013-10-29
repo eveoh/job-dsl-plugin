@@ -26,6 +26,8 @@ public interface JobManagement {
      */
     boolean createOrUpdateConfig(String jobName, String config, boolean ignoreExisting) throws JobNameNotProvidedException, JobConfigurationMissingException;
 
+    void createOrUpdateView(String name, String xml, boolean ignoreExisting)
+
     /**
      * Queue a job to run. Useful for running jobs after they've been created.
      */
