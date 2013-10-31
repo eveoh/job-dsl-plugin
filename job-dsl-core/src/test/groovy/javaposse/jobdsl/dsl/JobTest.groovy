@@ -133,7 +133,7 @@ class JobTest extends Specification {
         thrown(MissingMethodException)
     }
 
-    class JobParentConcrete extends JobParent {
+    class DslScriptConcrete extends DslScript {
 
         @Override
         Object run() {

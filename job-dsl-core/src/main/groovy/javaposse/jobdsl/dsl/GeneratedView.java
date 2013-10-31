@@ -1,54 +1,46 @@
 package javaposse.jobdsl.dsl;
 
 public class GeneratedView implements Comparable {
-    private String viewName;
+    private final String name;
 
-    public GeneratedView(String viewName) {
-        this.viewName = viewName;
+    public GeneratedView(String name) {
+        if (name == null) {
+            throw new IllegalArgumentException();
+        }
+        this.name = name;
     }
 
-    public String getViewName() {
-        return viewName;
+    public String getName() {
+        return name;
     }
 
     @Override
     public int compareTo(Object o) {
         if (o instanceof GeneratedView) {
-            return viewName.compareTo(((GeneratedView) o).getViewName());
+            return name.compareTo(((GeneratedView) o).getName());
         } else {
-            return viewName.compareTo(o.toString());
+            return name.compareTo(o.toString());
         }
     }
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((viewName == null) ? 0 : viewName.hashCode());
-        return result;
+        return name.hashCode();
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        GeneratedView other = (GeneratedView) obj;
-        if (viewName == null) {
-            if (other.viewName != null)
-                return false;
-        } else if (!viewName.equals(other.viewName))
-            return false;
-        return true;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof GeneratedView)) return false;
+
+        GeneratedView that = (GeneratedView) o;
+        return name.equals(that.name);
     }
 
     @Override
     public String toString() {
         return "GeneratedJob{" +
-                "viewName='" + viewName + "'" +
+                "viewName='" + name + "'" +
                 "}";
     }
 }

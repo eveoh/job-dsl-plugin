@@ -88,11 +88,11 @@ job {
         ScriptRequest request = new ScriptRequest(null, scriptStr, resourcesDir.toURL(), false)
 
         when:
-        JobParent jp = DslScriptLoader.runDslEngineForParent(request, jm)
+        DslScript dslScript = DslScriptLoader.runDslEngineForParent(request, jm)
 
         then:
-        jp != null
-        def jobs = jp.getReferencedJobs()
+        dslScript != null
+        def jobs = dslScript.getReferencedJobs()
         jobs.size() == 2
         def job = Iterables.get(jobs, 0)
         // If this one fails periodically, then it is because the referenced jobs are
@@ -111,11 +111,11 @@ job {
         ScriptRequest request = new ScriptRequest(null, scriptStr, resourcesDir.toURL(), false)
 
         when:
-        JobParent jp = DslScriptLoader.runDslEngineForParent(request, jm)
+        DslScript dslScript = DslScriptLoader.runDslEngineForParent(request, jm)
 
         then:
-        jp != null
-        def jobs = jp.getReferencedJobs()
+        dslScript != null
+        def jobs = dslScript.getReferencedJobs()
         jobs.size() == 1
         def job = Iterables.get(jobs, 0)
         job.name == 'test'
@@ -132,11 +132,11 @@ job {
         ScriptRequest request = new ScriptRequest(null, scriptStr, resourcesDir.toURL(), false)
 
         when:
-        JobParent jp = DslScriptLoader.runDslEngineForParent(request, jm)
+        DslScript dslScript = DslScriptLoader.runDslEngineForParent(request, jm)
 
         then:
-        jp != null
-        def jobs = jp.getReferencedJobs()
+        dslScript != null
+        def jobs = dslScript.getReferencedJobs()
         jobs.size() == 1
     }
 
@@ -251,4 +251,22 @@ readFileFromWorkspace('bar.txt')
 //
 //    }
 
+    def 'run engine with views'() {
+        setup:
+        def scriptStr = '''view {
+    name 'view-a'
+}
+view(type: ListView) {
+    name 'view-b'
+}
+'''
+
+        when:
+        def views = DslScriptLoader.runDslEngine(scriptStr, jm).views
+
+        then:
+        views.size() == 2
+        views.any { it.name == 'view-a' }
+        views.any { it.name == 'view-b' }
+    }
 }

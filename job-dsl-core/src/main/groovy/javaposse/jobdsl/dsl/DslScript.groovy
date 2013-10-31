@@ -8,9 +8,10 @@ import javaposse.jobdsl.dsl.views.ListView
 import java.util.logging.Level
 import java.util.logging.Logger
 
-public abstract class JobParent extends Script {
-    private static final Logger LOGGER = Logger.getLogger(JobParent.getName());
+public abstract class DslScript extends Script {
+    private static final Logger LOGGER = Logger.getLogger(DslScript.getName());
     private static final Map<ViewType, Class<? extends View>> VIEW_TYPE_MAPPING = [
+            (null): ListView.class,
             (ViewType.ListView): ListView.class,
     ]
 
@@ -19,7 +20,7 @@ public abstract class JobParent extends Script {
     Set<View> referencedViews
     List<String> queueToBuild
 
-    public JobParent() {
+    public DslScript() {
         referencedJobs = Sets.newLinkedHashSet()
         referencedViews = Sets.newLinkedHashSet()
         queueToBuild = Lists.newArrayList()
@@ -40,11 +41,12 @@ public abstract class JobParent extends Script {
     }
 
     public View view(Map<String, Object> arguments=[:], Closure closure) {
-        ViewType viewType = arguments['type'] as ViewType
-        Class<? extends View> viewClass = VIEW_TYPE_MAPPING[viewType]
-        View view = viewClass.newInstance(jm)
+        Class<? extends View> viewClass = VIEW_TYPE_MAPPING[arguments['type'] as ViewType]
+        View view = viewClass.newInstance()
         view.with(closure)
         referencedViews << view
+
+        // This view can have .configure { } called on
         return view
     }
 

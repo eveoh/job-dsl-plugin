@@ -18,9 +18,12 @@ gradle-app.setting
 /local*
 build
 /out
+classes/
 
 */test.xml
 */test2.xml
+*/view-a.xml
+*/view-b.xml
 
 #Jenkins specific out
 *.hpi

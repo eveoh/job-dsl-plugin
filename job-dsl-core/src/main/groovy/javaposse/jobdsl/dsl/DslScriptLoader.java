@@ -25,7 +25,7 @@ import java.util.logging.Logger;
 public class DslScriptLoader {
     private static final Logger LOGGER = Logger.getLogger(DslScriptLoader.class.getName());
 
-    public static JobParent runDslEngineForParent(ScriptRequest scriptRequest, JobManagement jobManagement) throws IOException {
+    public static DslScript runDslEngineForParent(ScriptRequest scriptRequest, JobManagement jobManagement) throws IOException {
         ClassLoader parentClassLoader = DslScriptLoader.class.getClassLoader();
         CompilerConfiguration config = createCompilerConfiguration(jobManagement);
 
@@ -47,7 +47,7 @@ public class DslScriptLoader {
 
         Binding binding = createBinding(jobManagement);
 
-        JobParent jp;
+        DslScript dslScript;
         try {
             Script script;
             if (scriptRequest.body != null) {
@@ -56,12 +56,12 @@ public class DslScriptLoader {
             } else {
                 script = engine.createScript(scriptRequest.location, binding);
             }
-            assert script instanceof JobParent;
+            assert script instanceof DslScript;
 
-            jp = (JobParent) script;
-            jp.setJm(jobManagement);
+            dslScript = (DslScript) script;
+            dslScript.setJm(jobManagement);
 
-            binding.setVariable("jobFactory", jp);
+            binding.setVariable("jobFactory", dslScript);
 
             script.run();
         } catch (Exception e) { // ResourceException or ScriptException
@@ -71,7 +71,7 @@ public class DslScriptLoader {
                 throw new IOException("Unable to run script", e);
             }
         }
-        return jp;
+        return dslScript;
     }
 
     /**
@@ -87,23 +87,23 @@ public class DslScriptLoader {
     }
 
     public static GeneratedItems runDslEngine(ScriptRequest scriptRequest, JobManagement jobManagement) throws IOException {
-        JobParent jp = runDslEngineForParent(scriptRequest, jobManagement);
-        LOGGER.log(Level.FINE, String.format("Ran script and got back %s", jp));
+        DslScript dslScript = runDslEngineForParent(scriptRequest, jobManagement);
+        LOGGER.log(Level.FINE, String.format("Ran script and got back %s", dslScript));
 
         GeneratedItems generatedItems = new GeneratedItems();
-        generatedItems.setJobs(extractGeneratedJobs(jp, scriptRequest.ignoreExisting));
-        generatedItems.setViews(extractGeneratedViews(jp, scriptRequest.ignoreExisting));
+        generatedItems.setJobs(extractGeneratedJobs(dslScript, scriptRequest.ignoreExisting));
+        generatedItems.setViews(extractGeneratedViews(dslScript, scriptRequest.ignoreExisting));
 
-        scheduleJobsToRun(jp.getQueueToBuild(), jobManagement);
+        scheduleJobsToRun(dslScript.getQueueToBuild(), jobManagement);
 
         return generatedItems;
     }
 
-    private static Set<GeneratedJob> extractGeneratedJobs(JobParent jp, boolean ignoreExisting) {
+    private static Set<GeneratedJob> extractGeneratedJobs(DslScript dslScript, boolean ignoreExisting) {
         // Iterate jobs which were setup, save them, and convert to a serializable form
         Set<GeneratedJob> generatedJobs = Sets.newLinkedHashSet();
-        if (jp != null) {
-            List<Job> refJobs = Lists.newArrayList(jp.getReferencedJobs()); // As List
+        if (dslScript != null) {
+            List<Job> refJobs = Lists.newArrayList(dslScript.getReferencedJobs()); // As List
             Collections.sort(refJobs, new Comparator<Job>() {
                 // Sort by the job type, so that normal (Maven and Freeform) are done before Multijob
                 @Override
@@ -115,7 +115,7 @@ public class DslScriptLoader {
                 try {
                     String xml = job.getXml();
                     LOGGER.log(Level.FINE, String.format("Saving job %s as %s", job.getName(), xml));
-                    boolean created = jp.getJm().createOrUpdateConfig(job.getName(), xml, ignoreExisting);
+                    boolean created = dslScript.getJm().createOrUpdateConfig(job.getName(), xml, ignoreExisting);
                     GeneratedJob gj = new GeneratedJob(job.getTemplateName(), job.getName(), created);
                     generatedJobs.add(gj);
                 } catch( Exception e) {  // org.xml.sax.SAXException, java.io.IOException
@@ -130,12 +130,12 @@ public class DslScriptLoader {
         return generatedJobs;
     }
 
-    private static Set<GeneratedView> extractGeneratedViews(JobParent jp, boolean ignoreExisting) {
+    private static Set<GeneratedView> extractGeneratedViews(DslScript dslScript, boolean ignoreExisting) {
         Set<GeneratedView> generatedViews = Sets.newLinkedHashSet();
-        for (View view : jp.getReferencedViews()) {
+        for (View view : dslScript.getReferencedViews()) {
             String xml = view.getXml();
             LOGGER.log(Level.FINE, String.format("Saving view %s as %s", view.getName(), xml));
-            jp.getJm().createOrUpdateView(view.getName(), xml, ignoreExisting);
+            dslScript.getJm().createOrUpdateView(view.getName(), xml, ignoreExisting);
             GeneratedView gv = new GeneratedView(view.getName());
             generatedViews.add(gv);
         }
@@ -172,7 +172,7 @@ public class DslScriptLoader {
 
     private static CompilerConfiguration createCompilerConfiguration(JobManagement jobManagement) {
         CompilerConfiguration config = new CompilerConfiguration(CompilerConfiguration.DEFAULT);
-        config.setScriptBaseClass("javaposse.jobdsl.dsl.JobParent");
+        config.setScriptBaseClass("javaposse.jobdsl.dsl.DslScript");
 
         // Import some of our helper classes so that user doesn't have to.
         ImportCustomizer icz = new ImportCustomizer();
