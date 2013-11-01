@@ -3,6 +3,7 @@ package javaposse.jobdsl.dsl.views
 import javaposse.jobdsl.dsl.View
 import javaposse.jobdsl.dsl.helpers.Context
 
+import static com.google.common.base.Preconditions.checkNotNull
 import static java.lang.String.CASE_INSENSITIVE_ORDER
 import static javaposse.jobdsl.dsl.helpers.AbstractContextHelper.executeInContext
 
@@ -10,6 +11,8 @@ class ListView extends View {
     private Set<String> jobNames = []
 
     void statusFilter(StatusFilter filter) {
+        checkNotNull(filter, "filter must not be null")
+
         execute {
             if (filter == StatusFilter.ALL) {
                 it.children().removeAll { it instanceof Node && it.name() == 'statusFilter' }
@@ -83,11 +86,15 @@ class ListView extends View {
         private String regex
 
         void name(String jobName) {
+            checkNotNull(jobName, "jobName must not be null")
+
             this.jobNames.add(jobName)
         }
 
         void names(String... jobNames) {
-            this.jobNames.addAll(jobNames)
+            for (String jobName : jobNames) {
+                name(jobName)
+            }
         }
 
         void regex(String regex) {

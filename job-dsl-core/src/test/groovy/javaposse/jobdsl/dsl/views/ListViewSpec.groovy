@@ -1,6 +1,5 @@
 package javaposse.jobdsl.dsl.views
 
-import javaposse.jobdsl.dsl.JobManagement
 import spock.lang.Specification
 
 import static javaposse.jobdsl.dsl.views.ListView.StatusFilter.ALL
@@ -72,6 +71,14 @@ class ListViewSpec extends Specification {
         root.statusFilter[0].text() == 'false'
     }
 
+    def 'statusFilter null'() {
+        when:
+        view.statusFilter(null)
+
+        then:
+        thrown(NullPointerException)
+    }
+
     def 'add job by name'() {
         when:
         view.jobs {
@@ -83,6 +90,16 @@ class ListViewSpec extends Specification {
         root.jobNames.size() == 1
         root.jobNames[0].string.size() == 1
         root.jobNames[0].string[0].text() == 'foo'
+    }
+
+    def 'job name null'() {
+        when:
+        view.jobs {
+            name(null)
+        }
+
+        then:
+        thrown(NullPointerException)
     }
 
     def 'add jobs by name'() {
@@ -97,6 +114,17 @@ class ListViewSpec extends Specification {
         root.jobNames[0].string.size() == 2
         root.jobNames[0].string[0].text() == 'bar'
         root.jobNames[0].string[1].text() == 'foo'
+    }
+
+    def 'job names null'() {
+        when:
+        view.jobs {
+            names('foo', null)
+        }
+
+        then:
+        thrown(NullPointerException)
+
     }
 
     def 'add jobs by regex'() {
