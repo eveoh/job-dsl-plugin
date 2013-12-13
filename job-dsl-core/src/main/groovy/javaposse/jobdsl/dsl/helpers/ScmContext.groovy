@@ -116,6 +116,7 @@ class ScmContext implements Context {
         validateMulti()
 
         GitContext gitContext = new GitContext()
+        gitClosure.resolveStrategy = Closure.DELEGATE_FIRST
         AbstractContextHelper.executeInContext(gitClosure, gitContext)
 
         if (gitContext.branches.empty) {
@@ -239,6 +240,7 @@ class ScmContext implements Context {
 
         void remote(Closure remoteClosure) {
             RemoteContext remoteContext = new RemoteContext()
+            remoteClosure.resolveStrategy = Closure.DELEGATE_FIRST
             AbstractContextHelper.executeInContext(remoteClosure, remoteContext)
 
             remoteConfigs << NodeBuilder.newInstance().('hudson.plugins.git.UserRemoteConfig') {
